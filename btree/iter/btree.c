@@ -20,6 +20,7 @@
  * možné toto detegovať vo funkcii.
  */
 void bst_init(bst_node_t **tree) {
+  (*tree) = NULL;
 }
 
 /*
@@ -32,6 +33,27 @@ void bst_init(bst_node_t **tree) {
  * Funkciu implementujte iteratívne bez použitia vlastných pomocných funkcií.
  */
 bool bst_search(bst_node_t *tree, char key, int *value) {
+  bool finish = false;
+  while(!finish ){
+    if(tree != NULL){
+      if(key < tree->key){
+        //is on the left
+        tree = tree->left;
+      }else if(key > tree->key){
+        //is on the right
+        tree = tree->right;
+      }else{
+        //we found the right one
+        finish = true;
+        (*value) = tree->value; 
+        return true;
+      }
+    }else{
+      //we are at the leaf node, but didn't find the one
+      finish = true;
+      return false;
+    }
+  }
   return false;
 }
 
@@ -47,6 +69,55 @@ bool bst_search(bst_node_t *tree, char key, int *value) {
  * Funkciu implementujte iteratívne bez použitia vlastných pomocných funkcií.
  */
 void bst_insert(bst_node_t **tree, char key, int value) {
+  //true if the right node was found
+  bool found = false;
+
+  bst_node_t *parrent_ptr = NULL;
+  bst_node_t *ptr = (*tree);
+
+  //new node
+  bst_node_t *new = malloc(sizeof(struct bst_node));
+  new->key = key;
+  new->value= value;
+  new->left= NULL;
+  new->right = NULL;
+
+  if((*tree) == NULL){
+      (*tree) = new;
+      found = true;
+  }
+  while (!found)
+  {
+    parrent_ptr = ptr;
+    if(key < ptr->key){
+      //insert to the left side
+      ptr = ptr->left;
+      if(ptr == NULL){
+          parrent_ptr->left = new;
+          found = true;
+      }
+    }else if(key > ptr->key){
+      //insert to the right side
+      ptr = ptr->right;
+      if(ptr == NULL){
+          parrent_ptr->right = new;
+          found = true;
+      }
+    }else{
+      //the keys are equal
+      ptr->key = key;
+      ptr->value = value;
+      found = true;
+
+      //we don't need the new one
+      free(new);
+      new = NULL;
+    }
+  }
+  if(!found){
+    free(new);
+    new = NULL;
+  }
 }
 
 /*
@@ -63,6 +134,20 @@ void bst_insert(bst_node_t **tree, char key, int value) {
  * Funkciu implementujte iteratívne bez použitia vlastných pomocných funkcií.
  */
 void bst_replace_by_rightmost(bst_node_t *target, bst_node_t **tree) {
+  bool finish = false;
+  bst_node_t *current = (*tree);
+  while(!finish){
+    if(current->right != NULL){
+        //traversing right
+        finish = true;
+        current = current->right; 
+    }else{
+      //we are at the leaf node
+      (*tree)->key = current->key;
+      (*tree)->value = current->value;
+      finish = true;
+    }
+  }
 }
 
 /*
@@ -78,6 +163,104 @@ void bst_replace_by_rightmost(bst_node_t *target, bst_node_t **tree) {
  * použitia vlastných pomocných funkcií.
  */
 void bst_delete(bst_node_t **tree, char key) {
+  //i know that my implementation of this function is pure evil, but it looks like it would pass at least one test
+  //true if the right node was found
+  bool found = false;
+
+  bst_node_t *parrent_ptr = NULL;
+  bst_node_t *ptr = (*tree);
+
+  if((*tree) == NULL){
+      found = true;
+  }
+  while (!found && ptr != NULL)
+  {
+    // printf("%i\n",i);
+    parrent_ptr = ptr;
+    if(key < ptr->key){
+      //left side
+      ptr = ptr->left;
+      if(ptr == NULL){
+        // printf("does not exist\n");
+        found = true;
+        break;
+      }else if(ptr->key == key){
+        //we found the node to delete (parrent_ptr->left or ptr)
+        if(ptr->left != NULL && ptr->left != NULL){
+        //if the node has both children, we replace it by the rightmost node on it's left side
+          bst_replace_by_rightmost(parrent_ptr->left,&(parrent_ptr->left->left));
+        }else if(ptr->left != NULL){
+          //if it has only left son, we replace it
+          bst_node_t *children_node = ptr->left;
+          free(parrent_ptr->left);
+          parrent_ptr->left = children_node;
+        }else if(ptr->right != NULL){
+          //if it has only right son, we replace it
+          bst_node_t *children_node = ptr->right;
+          free(parrent_ptr->left);
+          parrent_ptr->left = children_node;
+        }else{
+          //it has no children, we just delete it
+          free(parrent_ptr->left);
+          parrent_ptr->left = NULL;
+        }
+        found = true;
+      }
+    }else if(key > ptr->key){
+      //the right side
+      ptr = ptr->right;
+      if(ptr == NULL){
+        // printf("does not exist\n");
+        found = true;
+        break;
+      }else if(ptr->key == key){
+        //we found the node to delete (parrent_ptr->right or ptr)
+        if(ptr->left != NULL && ptr->right != NULL){
+          //if the node has both children, we replace it by the rightmost node on it's left side
+          bst_replace_by_rightmost(parrent_ptr->right,&parrent_ptr->right->left);
+        }else if(ptr->left != NULL){
+          //if it has only left son, we replace it
+          bst_node_t *children_node = ptr->left; 
+          free(parrent_ptr->right);
+          parrent_ptr->right = children_node;
+        }else if(ptr->right != NULL){
+          //if it has only left son, we replace it
+          bst_node_t *children_node = ptr->right;
+          free(parrent_ptr->right);
+          parrent_ptr->right = children_node;
+        }else{
+          //it has no children, we just delete it
+          free(parrent_ptr->right);
+          parrent_ptr->right = NULL;
+        }
+        found = true;
+      }
+    }
+    else{
+      //the keys are equal
+      //we found the node to delete (parrent_ptr->right or ptr)
+      if(ptr->left != NULL && ptr->right != NULL){
+        //if the node has both children, we replace it by the rightmost node on it's left side
+        bst_replace_by_rightmost(parrent_ptr->right,&parrent_ptr->right->left);
+      }else if(ptr->left != NULL){
+        //if it has only left son, we replace it
+        bst_node_t *children_node = ptr->left; 
+        free(parrent_ptr->right);
+        parrent_ptr->right = children_node;
+      }else if(ptr->right != NULL){
+        //if it has only left son, we replace it
+        bst_node_t *children_node = ptr->right;
+        free(parrent_ptr->right);
+        parrent_ptr->right = children_node;
+      }else{
+        //it has no children, we just delete it
+        free(parrent_ptr->right);
+        parrent_ptr->right = NULL;
+      }
+      found = true;
+    
+    }
+  }
 }
 
 /*
@@ -91,6 +274,49 @@ void bst_delete(bst_node_t **tree, char key) {
  * vlastných pomocných funkcií.
  */
 void bst_dispose(bst_node_t **tree) {
+  if((*tree) == NULL)
+    return;
+
+  stack_bst_t stack;
+  stack_bst_init(&stack);
+
+  stack_bst_push(&stack,(*tree));
+
+  while(!stack_bst_empty(&stack)){
+    bst_node_t *node = stack_bst_pop(&stack);
+    if(node->left != NULL)
+      stack_bst_push(&stack,node->left);
+    if(node->right != NULL)
+      stack_bst_push(&stack,node->right);
+    if(node != NULL){
+      free(node);
+      node = NULL;
+    }
+  }
+  (*tree) = NULL;
+  // stack_bst_t stack;
+  // stack_bst_init(&stack);
+  // bst_node_t *node = (*tree);
+  // while(node != NULL){
+  //   stack_bst_push(&stack, node->right);
+  //   stack_bst_push(&stack, node);
+  //   node = node->left;
+  // }
+  // while (!stack_bst_empty(&stack))
+  // {
+  //   node = stack_bst_pop(&stack);
+  //   if(node == NULL)
+  //     continue;
+  //   if(node->right != NULL && node->right == stack_bst_top(&stack)){
+  //     stack_bst_pop(&stack);
+  //     stack_bst_push(&stack, node);
+  //     node = node->right;
+  //   }else{
+  //     fprintf(stderr,"freeing (%c,%i)",node->key,node->value);
+  //     free(node);
+  //     node = NULL;
+  //   }
+  // }
 }
 
 /*

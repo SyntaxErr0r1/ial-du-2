@@ -147,7 +147,7 @@ void bst_delete(bst_node_t **tree, char key) {
         }
       }else{
         //has 2 sons
-        bst_replace_by_rightmost((*tree),&(*tree));
+        bst_replace_by_rightmost((*tree),&(*tree)->left);
       }
     }
   }

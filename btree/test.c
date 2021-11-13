@@ -137,6 +137,19 @@ bst_delete(&test_tree, 'H');
 bst_print_tree(test_tree);
 ENDTEST
 
+TEST(test_tree_delete_both_subtrees_parent,
+     "Delete a node with both subtrees while moving a parent (F, H)")
+bst_init(&test_tree);
+bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
+bst_insert_many(&test_tree, additional_keys, additional_values,
+                additional_data_count);
+
+bst_delete(&test_tree, 'G');
+bst_print_tree(test_tree);
+bst_delete(&test_tree, 'H');
+bst_print_tree(test_tree);
+ENDTEST
+
 TEST(test_tree_dispose_filled, "Dispose the whole tree")
 bst_init(&test_tree);
 bst_insert_many(&test_tree, base_keys, base_values, base_data_count);
@@ -147,7 +160,8 @@ ENDTEST
 
 TEST(test_tree_preorder, "Traverse the tree using preorder")
 bst_init(&test_tree);
-bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
+bst_insert_many(&test_tree, traversal_keys, traversal_values,
+                traversal_data_count);
 bst_preorder(test_tree);
 printf("\n");
 bst_print_tree(test_tree);
@@ -155,7 +169,8 @@ ENDTEST
 
 TEST(test_tree_inorder, "Traverse the tree using inorder")
 bst_init(&test_tree);
-bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
+bst_insert_many(&test_tree, traversal_keys, traversal_values,
+                traversal_data_count);
 bst_inorder(test_tree);
 printf("\n");
 bst_print_tree(test_tree);
@@ -163,12 +178,12 @@ ENDTEST
 
 TEST(test_tree_postorder, "Traverse the tree using postorder")
 bst_init(&test_tree);
-bst_insert_many(&test_tree, traversal_keys, traversal_values, traversal_data_count);
+bst_insert_many(&test_tree, traversal_keys, traversal_values,
+                traversal_data_count);
 bst_postorder(test_tree);
 printf("\n");
 bst_print_tree(test_tree);
 ENDTEST
-
 
 int main(int argc, char *argv[]) {
   init_test();
@@ -186,6 +201,7 @@ int main(int argc, char *argv[]) {
   test_tree_delete_left_subtree();
   test_tree_delete_right_subtree();
   test_tree_delete_both_subtrees();
+  test_tree_delete_both_subtrees_parent();
   test_tree_delete_missing();
   test_tree_delete_root();
   test_tree_dispose_filled();
